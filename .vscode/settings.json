@@ -28,16 +28,6 @@
     },
     "makefile.launchConfigurations": [
         {
-            "cwd": "e:\\sea\\game",
-            "binaryPath": "e:\\sea\\game\\game.exe",
-            "binaryArgs": []
-        },
-        {
-            "cwd": "e:\\sea",
-            "binaryPath": "e:\\sea\\game.exe",
-            "binaryArgs": []
-        },
-        {
             "cwd": "e:\\OGLE",
             "binaryPath": "e:\\OGLE\\game.exe",
             "binaryArgs": []
