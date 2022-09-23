@@ -7,5 +7,6 @@
 
 GLFWwindow* InitEngine(int windowWidth, int windowHeight);
 bool CompileShaderProgramFromFiles(const char* vertexPath, const char* fragmentPath, unsigned int* shaderProgram, char infoLog[512]);
+bool LoadImageAndGenTexture(const char* name, int* width, int* height, int* nrChannels, unsigned int* texture, GLenum format);
 
 #endif

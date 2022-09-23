@@ -2,6 +2,9 @@
 #include "utils.h"
 #include <stdio.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
@@ -51,6 +54,12 @@ GLFWwindow* InitEngine(int windowWidth, int windowHeight) {
 
     glViewport(0, 0, windowWidth, windowHeight);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    stbi_set_flip_vertically_on_load(true);
+
     return window;
 }
 
@@ -80,5 +89,30 @@ bool CompileShaderProgramFromFiles(const char* vertexPath, const char* fragmentP
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+    return true;
+}
+
+bool LoadImageAndGenTexture(const char* name, int* width, int* height, int* nrChannels, unsigned int* texture, GLenum format) {
+    unsigned char* data = stbi_load(name, width, height, nrChannels, 0);
+    if (!data) {
+        printf("stbi_load failed to load: %s", name);
+        return false;
+    }
+
+    glGenTextures(1, texture);
+    glBindTexture(GL_TEXTURE_2D, *texture);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, *width, *height, 0, format, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    stbi_image_free(data);
     return true;
 }
