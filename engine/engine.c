@@ -33,7 +33,7 @@ bool CompileShader(const char* shaderPath, GLenum shaderType, char infoLog[512],
     return true;
 }
 
-GLFWwindow* InitEngine(int windowWidth, int windowHeight) {
+GLFWwindow* EngineInit(int windowWidth, int windowHeight) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -55,6 +55,7 @@ GLFWwindow* InitEngine(int windowWidth, int windowHeight) {
     glViewport(0, 0, windowWidth, windowHeight);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    glEnable(GL_DEPTH_TEST); 
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 

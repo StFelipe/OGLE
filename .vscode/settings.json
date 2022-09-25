@@ -24,7 +24,9 @@
         "sdl.h": "c",
         "glad.h": "c",
         "stdio.h": "c",
-        "*.shader": "c"
+        "*.shader": "c",
+        "cglm.h": "c",
+        "struct.h": "c"
     },
     "makefile.launchConfigurations": [
         {
