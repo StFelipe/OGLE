@@ -9,8 +9,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-bool CompileShader(const char* shaderPath, GLenum shaderType, char infoLog[512], unsigned int* shader)
-{
+bool shader_compile(const char* shaderPath, GLenum shaderType, char infoLog[512], unsigned int* shader) {
     char* shaderSource = ReadFile(shaderPath);
     if (!shaderSource)
         return false;
@@ -33,7 +32,7 @@ bool CompileShader(const char* shaderPath, GLenum shaderType, char infoLog[512],
     return true;
 }
 
-GLFWwindow* EngineInit(int windowWidth, int windowHeight) {
+GLFWwindow* engine_init(int windowWidth, int windowHeight) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -55,7 +54,8 @@ GLFWwindow* EngineInit(int windowWidth, int windowHeight) {
     glViewport(0, 0, windowWidth, windowHeight);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    glEnable(GL_DEPTH_TEST); 
+    glEnable(GL_DEPTH_TEST);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -64,13 +64,13 @@ GLFWwindow* EngineInit(int windowWidth, int windowHeight) {
     return window;
 }
 
-bool CompileShaderProgramFromFiles(const char* vertexPath, const char* fragmentPath, unsigned int* shaderProgram, char infoLog[512]) {
+bool shader_compileFromFiles(const char* vertexPath, const char* fragmentPath, unsigned int* shaderProgram, char infoLog[512]) {
     unsigned int vertexShader;
-    if (!CompileShader(vertexPath, GL_VERTEX_SHADER, infoLog, &vertexShader))
+    if (!shader_compile(vertexPath, GL_VERTEX_SHADER, infoLog, &vertexShader))
         return false;
     
     unsigned int fragmentShader;
-    if (!CompileShader(fragmentPath, GL_FRAGMENT_SHADER, infoLog, &fragmentShader))
+    if (!shader_compile(fragmentPath, GL_FRAGMENT_SHADER, infoLog, &fragmentShader))
         return false;
     
     *shaderProgram = glCreateProgram();
@@ -93,7 +93,7 @@ bool CompileShaderProgramFromFiles(const char* vertexPath, const char* fragmentP
     return true;
 }
 
-bool LoadImageAndGenTexture(const char* name, int* width, int* height, int* nrChannels, unsigned int* texture, GLenum format) {
+bool image_loadAndGenTexture(const char* name, int* width, int* height, int* nrChannels, unsigned int* texture, GLenum format) {
     unsigned char* data = stbi_load(name, width, height, nrChannels, 0);
     if (!data) {
         printf("stbi_load failed to load: %s", name);
@@ -116,4 +116,18 @@ bool LoadImageAndGenTexture(const char* name, int* width, int* height, int* nrCh
 
     stbi_image_free(data);
     return true;
+}
+
+
+
+vec3s quaternion_forward(versors quaternion) {
+    return glms_vec3_normalize(glms_quat_rotatev(quaternion, (vec3s){0.0f, 0.0f, -1.0f}));
+}
+
+vec3s quaternion_right(versors quaternion) {
+    return glms_vec3_normalize(glms_quat_rotatev(quaternion, (vec3s){1.0f, 0.0f, 0.0f}));
+}
+
+vec3s quaternion_up(versors quaternion) {
+    return glms_vec3_normalize(glms_quat_rotatev(quaternion, (vec3s){0.0f, 1.0f, 0.0f}));
 }
