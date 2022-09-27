@@ -132,9 +132,9 @@ int main(int argc, char* argv[]) {
 
     glUseProgram(shaderProgram);
     glUniform1i(glGetUniformLocation(shaderProgram, "objectTexture"), 0);
-    glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, &(vec3s){1, 0.5, 0.31});
+    glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, &(vec3s){1, 1, 1});
     glUniform3fv(glGetUniformLocation(shaderProgram, "lightColor"), 1, &(vec3s){1, 1, 1});
-    glUniform3fv(glGetUniformLocation(shaderProgram, "lightPos"), 1, &(vec3s){0, 0, 5});
+    glUniform3fv(glGetUniformLocation(shaderProgram, "lightDirection"), 1, &(vec3s){0.2f, 1.0f, 0.3f});
 
     vec3s cameraPos = {0, 0, 3};
     vec3s cameraTarget = {0.0f, 0.0f, 0.0f};
