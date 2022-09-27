@@ -55,86 +55,30 @@ int main(int argc, char* argv[]) {
     if (!shader_compileFromFiles("shaders/vertex.vs", "shaders/fragment.fs", &shaderProgram, infoLog))
         return -1;
 
-    int width, height, nrChannels;
-    unsigned int texture;
-    if (!image_loadAndGenTexture("wall.jpg", &width, &height, &nrChannels, &texture, GL_RGB))
-        return -1;
-
     float vertices[] = {
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  0.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  0.0f, 0.0f,
-
-    -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
-};
-    // unsigned int indices[] = {
-    //     0, 1, 2,
-    //     2, 3, 0
-    // };
-    
-    // unsigned int EBO;
-    // glGenBuffers(1, &EBO);
-
+		-1.0f,  1.0f,
+        1.0f,  1.0f,
+        1.0f, -1.0f,
+        1.0f,  -1.0f,
+        -1.0f, -1.0f,
+        -1.0f,  1.0f,
+    };
     unsigned int VBO;
     glGenBuffers(1, &VBO);
-
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
     glUseProgram(shaderProgram);
-    glUniform1i(glGetUniformLocation(shaderProgram, "objectTexture"), 0);
-    glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, &(vec3s){1, 1, 1});
-    glUniform3fv(glGetUniformLocation(shaderProgram, "lightColor"), 1, &(vec3s){1, 1, 1});
-    glUniform3fv(glGetUniformLocation(shaderProgram, "lightDirection"), 1, &(vec3s){0.2f, 1.0f, 0.3f});
+    unsigned int iResolutionLoc = glGetUniformLocation(shaderProgram, "iResolution");
+    unsigned int iTimeLoc = glGetUniformLocation(shaderProgram, "iTime");
 
     vec3s cameraPos = {0, 0, 3};
     vec3s cameraTarget = {0.0f, 0.0f, 0.0f};
@@ -148,24 +92,9 @@ int main(int argc, char* argv[]) {
     mat4s view;
     mat4s projection;
 
-
-    unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
-    unsigned int modelInvLoc = glGetUniformLocation(shaderProgram, "modelInv");
-    unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-    unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-
-
-    vec3s cubePositions[] = {
-        (vec3s){0.0f,  0.0f,  0.0f}, 
-        (vec3s){2.0f,  5.0f, -15.0f}, 
-        (vec3s){-1.5f, -2.2f, -2.5f}, 
-        (vec3s){-3.8f, -2.0f, -12.3f}, 
-        (vec3s){-1.7f,  3.0f, -7.5f}, 
-        (vec3s){1.3f, -2.0f, -2.5f}, 
-        (vec3s){1.5f,  2.0f, -2.5f}, 
-        (vec3s){1.5f,  0.2f, -1.5f}, 
-        (vec3s){-1.3f,  1.0f, -1.5f}
-    };
+    // unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
+    // unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+    // unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
     
     double deltaTime = 0;
     double lastFrame = 0;
@@ -179,7 +108,7 @@ int main(int argc, char* argv[]) {
         lastFrame = currentFrame;
         
         timer += deltaTime;
-        if (timer > 0.5)
+        if (timer > 1.0)
         {
             timer = deltaTime;
             printf("%f\n", (1.0 / deltaTime));
@@ -224,40 +153,20 @@ int main(int argc, char* argv[]) {
         cameraRight = glms_vec3_normalize(glms_vec3_cross(cameraForward, WORLD_UP));
         cameraUp = glms_vec3_normalize(glms_vec3_cross(cameraRight, cameraForward));
 
-        // versors pitch = glms_quat_normalize(glms_quatv(-mouseDeltaY * LOOK_SENSITIVITY, quaternion_right(cameraTrans.rotation)));
-        // versors yaw = glms_quat_normalize(glms_quat(mouseDeltaX * LOOK_SENSITIVITY, 0, -1, 0));
-        // cameraTrans.rotation = glms_quat_normalize(glms_quat_mul(pitch, glms_quat_normalize(glms_quat_mul(cameraTrans.rotation, yaw))));
-
         view = glms_look(cameraPos, cameraForward, cameraUp);
 
-        glClearColor(0.05f, 0.08f, 0.12f, 1.0f);
+        glClearColor(0, 0, 0, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
+        glUniform1f(iTimeLoc, currentFrame);
+        glUniform2fv(iResolutionLoc, 1, &(vec2){windowWidth, windowHeight});
 
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view);
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection);
-        
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        // glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view);
+        // glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection);
 
         glBindVertexArray(VAO);
-        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        //glDrawArrays( GL_TRIANGLES, 0, 36);
-
-        for(int i = 0; i < 10; i++)
-        {
-            mat4s model = GLMS_MAT4_IDENTITY;
-            model = glms_translate(model, cubePositions[i]);
-            float angle = 20.0f * i;
-            model = glms_rotate(model, glm_rad(angle), (vec3s){1, -0.6, 0.5});
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model);
-            mat4s modelInv = glms_mat4_inv(model);
-            glUniformMatrix4fv(modelInvLoc, 1, GL_FALSE, &modelInv);
-
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-
+        glDrawArrays( GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
 
         mouseDeltaX = 0;
