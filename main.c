@@ -27,10 +27,8 @@ bool firstMouse = true;
 
 void UpdateShader(unsigned int shaderId) {
     glUseProgram(shaderId);
-    glUniform1i(glGetUniformLocation(shaderId, "objectTexture"), 0);
-    glUniform3fv(glGetUniformLocation(shaderId, "objectColor"), 1, &(vec3s){1, 1, 1});
-    glUniform3fv(glGetUniformLocation(shaderId, "lightColor"), 1, &(vec3s){1, 1, 1});
-    glUniform3fv(glGetUniformLocation(shaderId, "lightDirection"), 1, &(vec3s){0.2f, 1.0f, 0.3f});
+    // glUniform1i(glGetUniformLocation(shaderId, "objectTexture"), 0);
+    // glUniform3fv(glGetUniformLocation(shaderId, "objectColor"), 1, &(vec3s){1, 1, 1});
 }
 
 mat4s projection_create(mat4s projection, int width, int height) {
@@ -89,47 +87,8 @@ int main(int argc, char* argv[]) {
         return -1;
 
     float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  0.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
+        -1, 1, 0,  1, 1, 0,  1, -1, 0,
+        1, -1, 0,  -1, -1, 0,  -1, 1, 0
     };
 
     unsigned int VBO;
@@ -141,35 +100,13 @@ int main(int argc, char* argv[]) {
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
     UpdateShader(shader.id);
     glUseProgram(shader.id);
-    unsigned int modelLoc = glGetUniformLocation(shader.id, "model");
-    unsigned int modelInvLoc = glGetUniformLocation(shader.id, "modelInv");
-    unsigned int viewLoc = glGetUniformLocation(shader.id, "view");
-    unsigned int projectionLoc = glGetUniformLocation(shader.id, "projection");
-
-
-    vec3s cubePositions[] = {
-        (vec3s){0.0f,  0.0f,  0.0f}, 
-        (vec3s){2.0f,  5.0f, -15.0f}, 
-        (vec3s){-1.5f, -2.2f, -2.5f}, 
-        (vec3s){-3.8f, -2.0f, -12.3f}, 
-        (vec3s){-1.7f,  3.0f, -7.5f}, 
-        (vec3s){1.3f, -2.0f, -2.5f}, 
-        (vec3s){1.5f,  2.0f, -2.5f}, 
-        (vec3s){1.5f,  0.2f, -1.5f}, 
-        (vec3s){-1.3f,  1.0f, -1.5f}
-    };
-
+    //unsigned int modelLoc = glGetUniformLocation(shader.id, "model");
 
     double timer = 0;
     while (!glfwWindowShouldClose(window))
@@ -212,32 +149,19 @@ int main(int argc, char* argv[]) {
 
         view = glms_look(camera.position, camera.forward, camera.up);
 
-        glClearColor(0.05f, 0.08f, 0.12f, 1.0f);
+        glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(shader.id);
 
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view);
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection);
+        // glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view);
+        // glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection);
         
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture.id);
 
         glBindVertexArray(VAO);
-
-        for(int i = 0; i < 9; i++)
-        {
-            mat4s model = GLMS_MAT4_IDENTITY;
-            model = glms_translate(model, cubePositions[i]);
-            float angle = 20.0f * i;
-            model = glms_rotate(model, glm_rad(angle), (vec3s){1, -0.6, 0.5});
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model);
-            mat4s modelInv = glms_mat4_inv(model);
-            glUniformMatrix4fv(modelInvLoc, 1, GL_FALSE, &modelInv);
-
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-
+        glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
 
         mouseDeltaX = 0;
