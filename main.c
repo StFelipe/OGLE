@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
     double deltaTime = 0;
     double lastFrame = 0;
 
-    Camera camera = camera_create((vec3s){ 0, 0, 3 }, (vec3s){ 0.0f, 0.0f, 0.0f });
+    Camera camera = camera_create((vec3s){ 0, 1, 0 }, (vec3s){ 0.0f, 0.0f, 0.0f });
 
     GLFWwindow* window = engine_init(windowWidth, windowHeight);
     if (window == NULL)
@@ -155,8 +155,10 @@ int main(int argc, char* argv[]) {
         glUseProgram(shader.id);
 
         // glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view);
-        // glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection);
-        // test
+        glUniform2fv(glGetUniformLocation(shader.id, "u_resolution"), 1, &(vec2s){windowWidth, windowHeight});
+        glUniform1f(glGetUniformLocation(shader.id, "u_time"), currentFrame);
+        glUniformMatrix4fv(glGetUniformLocation(shader.id, "view"), 1, GL_FALSE, &view);
+        glUniformMatrix4fv(glGetUniformLocation(shader.id, "projection"), 1, GL_FALSE, &projection);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture.id);
