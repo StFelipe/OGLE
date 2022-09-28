@@ -156,7 +156,8 @@ int main(int argc, char* argv[]) {
 
         // glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view);
         // glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection);
-        
+        // test
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture.id);
 
