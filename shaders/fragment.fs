@@ -8,18 +8,19 @@ uniform vec3 cameraPos;
 uniform vec3 cameraDir;
 uniform vec3 cameraRight;
 uniform vec3 cameraUp;
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+uniform float moveSpeed;
 
 // Constants
 #define NUMBER_OF_STEPS 250
-#define MINIMUM_HIT_DISTANCE 0.000000005
+//#define MINIMUM_HIT_DISTANCE 0.000000005
 #define MAXIMUM_TRACE_DISTANCE 1000.0
 
 #define BAILOUT 5
 #define POWER 8
 #define ITERATIONS 16
+
+#define MOVE_SPEED_HIT_DISTANCE_MUL 0.001
+float minHitDistance;
  
  float distance_from_fractal(in vec3 pos)
 {
@@ -73,10 +74,9 @@ vec3 ray_march(in vec3 ro, in vec3 rd)
         // We wrote this function earlier in the tutorial -
         // assume that the sphere is centered at the origin
         // and has unit radius
-        vec4 pos = projection * view * model * vec4(0.0, 0.0, 0.0, 1);
         float distance_to_closest = distance_from_fractal(current_position);
 
-        if (distance_to_closest < MINIMUM_HIT_DISTANCE) // hit
+        if (distance_to_closest < minHitDistance) // hit
         {
             // Remember, each component of the normal will be in 
             // the range -1..1, so for the purposes of visualizing
@@ -86,7 +86,7 @@ vec3 ray_march(in vec3 ro, in vec3 rd)
             //return normal * 0.5 + 0.5;
 
             float c = (float(i) / NUMBER_OF_STEPS);
-            return vec3(c, 1 - c, abs(c - 0.5) * 2);
+            return vec3(1 - c, abs(c - 0.5) * 2, 1 - (abs(c - 0.5) * 2));
         }
 
         if (total_distance_traveled > MAXIMUM_TRACE_DISTANCE) // miss
@@ -106,6 +106,8 @@ vec3 ray_march(in vec3 ro, in vec3 rd)
 
 void main()
 {
+    minHitDistance = moveSpeed * MOVE_SPEED_HIT_DISTANCE_MUL;
+
     vec2 uv = (gl_FragCoord.xy - (0.5 * u_resolution.xy)) / u_resolution.x;
 
     vec3 ro = cameraPos;

@@ -176,18 +176,12 @@ int main(int argc, char* argv[]) {
         // glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view);
         glUniform2fv(glGetUniformLocation(shader.id, "u_resolution"), 1, &(vec2s){windowWidth, windowHeight});
         glUniform1f(glGetUniformLocation(shader.id, "u_time"), currentFrame);
+        glUniform1f(glGetUniformLocation(shader.id, "moveSpeed"), moveSpeed);
 
         glUniform3fv(glGetUniformLocation(shader.id, "cameraPos"), 1, &camera.position);
         glUniform3fv(glGetUniformLocation(shader.id, "cameraDir"), 1, &camera.forward);
         glUniform3fv(glGetUniformLocation(shader.id, "cameraRight"), 1, &camera.right);
         glUniform3fv(glGetUniformLocation(shader.id, "cameraUp"), 1, &camera.up);
-
-        glUniformMatrix4fv(glGetUniformLocation(shader.id, "view"), 1, GL_FALSE, &view);
-        glUniformMatrix4fv(glGetUniformLocation(shader.id, "projection"), 1, GL_FALSE, &projection);
-
-        mat4s model = GLMS_MAT4_IDENTITY;
-        model = glms_translate(model, (vec3s){0, 0, 0});
-        glUniformMatrix4fv(glGetUniformLocation(shader.id, "model"), 1, GL_FALSE, &model);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture.id);
