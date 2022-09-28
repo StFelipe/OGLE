@@ -10,14 +10,15 @@
 #define WINDOW_START_WIDTH 800
 #define WINDOW_START_HEIGHT 600
 
-#define MOVE_SPEED 5.0
-#define LOOK_SENSITIVITY 0.05
+#define LOOK_SENSITIVITY 0.025
+#define MOVE_SPEED_CHANGE 1
 
 #define FOV 45
 
 
 Shader shader;
 char infoLog[512];
+double moveSpeed = 5.0;
 
 double mouseX = 0;
 double mouseY = 0;
@@ -47,6 +48,15 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     mouseX = xpos;
     mouseY = ypos;
 }
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    if (yoffset > 0)
+        moveSpeed *= 2;
+    else
+        moveSpeed /= 2;
+}
+
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
@@ -83,6 +93,7 @@ int main(int argc, char* argv[]) {
         return -1;
 
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
     glfwSetKeyCallback(window, key_callback);
 
     shader.vertexPath = "shaders/vertex.vs";
@@ -124,7 +135,7 @@ int main(int argc, char* argv[]) {
         lastFrame = currentFrame;
         
         timer += deltaTime;
-        if (timer > 0.5)
+        if (timer > 5)
         {
             timer = deltaTime;
             printf("%f\n", (1.0 / deltaTime));
@@ -152,7 +163,7 @@ int main(int argc, char* argv[]) {
             moveDir = glms_vec3_add(moveDir, glms_vec3_scale(camera.forward, -1));
         }
 
-        moveDir = glms_vec3_scale(glms_vec3_normalize(moveDir), MOVE_SPEED * deltaTime);
+        moveDir = glms_vec3_scale(glms_vec3_normalize(moveDir), moveSpeed * deltaTime);
         camera = camera_update(camera, moveDir, mouseDeltaX * LOOK_SENSITIVITY, -mouseDeltaY * LOOK_SENSITIVITY);
 
         view = glms_look(camera.position, camera.forward, camera.up);

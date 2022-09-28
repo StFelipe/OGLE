@@ -13,39 +13,53 @@ uniform mat4 view;
 uniform mat4 projection;
 
 // Constants
-#define NUMBER_OF_STEPS 64
-#define MINIMUM_HIT_DISTANCE 0.001
+#define NUMBER_OF_STEPS 250
+#define MINIMUM_HIT_DISTANCE 0.000000005
 #define MAXIMUM_TRACE_DISTANCE 1000.0
+
+#define BAILOUT 5
+#define POWER 8
+#define ITERATIONS 16
  
- float distance_from_sphere(in vec3 pos, in vec3 spherePos, float r)
+ float distance_from_fractal(in vec3 pos)
 {
-	return length(mod(pos, 2    ) - vec3(1, 1, 1)) - .5;
-    // spherePos.xy = mod((spherePos.xy),1.0)-vec2(0.5); // instance on xy-plane
-    // return length(spherePos)-0.3;             // sphere DE
+	vec3 z = pos;
+	float dr = 1.0;
+	float r = 0.0;
+	for (int i = 0; i < ITERATIONS ; i++) {
+		r = length(z);
+		if (r>BAILOUT)
+            break;
+		
+		// convert to polar coordinates
+		float theta = acos(z.z/r);
+		float phi = atan(z.y,z.x);
+		dr =  pow( r, POWER-1.0)*POWER*dr + 1.0;
+		
+		// scale and rotate the point
+		float zr = pow( r,POWER);
+		theta = theta*POWER;
+		phi = phi*POWER;
+		
+		// convert back to cartesian coordinates
+		z = zr*vec3(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
+		z+=pos;
+	}
+	return 0.5*log(r)*r/dr;
 }
 
-float map_the_world(in vec3 p)
-{
-    vec4 pos = projection * view * model * vec4(0, 0, 0, 1);
-    float sphere_0 = distance_from_sphere(p, vec3(pos.xyz), 1);
-    
-    return sphere_0;
-}
+// vec3 calculate_normal(in vec3 p)
+// {
+//     const vec3 small_step = vec3(0.001, 0.0, 0.0);
 
-vec3 calculate_normal(in vec3 p)
-{
-    const vec3 small_step = vec3(0.001, 0.0, 0.0);
+//     float gradient_x = distance_from_fractal(p + small_step.xyy) - distance_from_fractal(p - small_step.xyy);
+//     float gradient_y = distance_from_fractal(p + small_step.yxy) - distance_from_fractal(p - small_step.yxy);
+//     float gradient_z = distance_from_fractal(p + small_step.yyx) - distance_from_fractal(p - small_step.yyx);
 
-    float gradient_x = map_the_world(p + small_step.xyy) - map_the_world(p - small_step.xyy);
-    float gradient_y = map_the_world(p + small_step.yxy) - map_the_world(p - small_step.yxy);
-    float gradient_z = map_the_world(p + small_step.yyx) - map_the_world(p - small_step.yyx);
+//     vec3 normal = vec3(gradient_x, gradient_y, gradient_z);
 
-    vec3 normal = vec3(gradient_x, gradient_y, gradient_z);
-
-    return normalize(normal);
-}
-
-
+//     return normalize(normal);
+// }
 
 vec3 ray_march(in vec3 ro, in vec3 rd)
 {
@@ -60,18 +74,19 @@ vec3 ray_march(in vec3 ro, in vec3 rd)
         // assume that the sphere is centered at the origin
         // and has unit radius
         vec4 pos = projection * view * model * vec4(0.0, 0.0, 0.0, 1);
-        float distance_to_closest = map_the_world(current_position);
+        float distance_to_closest = distance_from_fractal(current_position);
 
         if (distance_to_closest < MINIMUM_HIT_DISTANCE) // hit
         {
-            vec3 normal = calculate_normal(current_position);
-
             // Remember, each component of the normal will be in 
             // the range -1..1, so for the purposes of visualizing
             // it as an RGB color, let's remap it to the range
             // 0..1
-            //return vec3(1, 0, 0);
-            return normal * 0.5 + 0.5;
+            //vec3 normal = calculate_normal(current_position);
+            //return normal * 0.5 + 0.5;
+
+            float c = (float(i) / NUMBER_OF_STEPS);
+            return vec3(c, 1 - c, abs(c - 0.5) * 2);
         }
 
         if (total_distance_traveled > MAXIMUM_TRACE_DISTANCE) // miss
