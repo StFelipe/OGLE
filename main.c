@@ -15,16 +15,28 @@
 
 #define FOV 45
 
-mat4s projection_create(mat4s projection, int width, int height) {
-    return glms_perspective(glm_rad(FOV), (float)width / height, 0.1, 100);
-}
 
+Shader shader;
+char infoLog[512];
 
 double mouseX = 0;
 double mouseY = 0;
 double mouseDeltaX = 0;
 double mouseDeltaY = 0;
 bool firstMouse = true;
+
+void UpdateShader(unsigned int shaderId) {
+    glUseProgram(shaderId);
+    glUniform1i(glGetUniformLocation(shaderId, "objectTexture"), 0);
+    glUniform3fv(glGetUniformLocation(shaderId, "objectColor"), 1, &(vec3s){1, 1, 1});
+    glUniform3fv(glGetUniformLocation(shaderId, "lightColor"), 1, &(vec3s){1, 1, 1});
+    glUniform3fv(glGetUniformLocation(shaderId, "lightDirection"), 1, &(vec3s){0.2f, 1.0f, 0.3f});
+}
+
+mat4s projection_create(mat4s projection, int width, int height) {
+    return glms_perspective(glm_rad(FOV), (float)width / height, 0.1, 100);
+}
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     if (firstMouse) {
         mouseX = xpos;
@@ -38,78 +50,87 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     mouseY = ypos;
 }
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
+        if (!shader_compileFromFiles(&shader, infoLog))
+            return -1;
+
+        UpdateShader(shader.id);
+    }
+}
+
 int main(int argc, char* argv[]) {
     int windowWidth = 800;
     int windowHeight = 600;
     int viewportDimensions[4];
+
+    mat4s view;
+    mat4s projection;
+    
+    double deltaTime = 0;
+    double lastFrame = 0;
+
+    Camera camera = camera_create((vec3s){ 0, 0, 3 }, (vec3s){ 0.0f, 0.0f, 0.0f });
 
     GLFWwindow* window = engine_init(windowWidth, windowHeight);
     if (window == NULL)
         return -1;
 
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetKeyCallback(window, key_callback);
 
-    char infoLog[512];
-
-    unsigned int shaderProgram;
-    if (!shader_compileFromFiles("shaders/vertex.vs", "shaders/fragment.fs", &shaderProgram, infoLog))
+    shader.vertexPath = "shaders/vertex.vs";
+    shader.fragmentPath = "shaders/fragment.fs";
+    if (!shader_compileFromFiles(&shader, infoLog))
         return -1;
 
-    int width, height, nrChannels;
-    unsigned int texture;
-    if (!image_loadAndGenTexture("wall.jpg", &width, &height, &nrChannels, &texture, GL_RGB))
+    Texture texture;
+    if (!texture_loadAndGen("wall.jpg", &texture, GL_RGB))
         return -1;
 
     float vertices[] = {
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
 
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  0.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  0.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,  0.0f, 0.0f,
 
-    -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
 
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
-};
-    // unsigned int indices[] = {
-    //     0, 1, 2,
-    //     2, 3, 0
-    // };
-    
-    // unsigned int EBO;
-    // glGenBuffers(1, &EBO);
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
+    };
 
     unsigned int VBO;
     glGenBuffers(1, &VBO);
@@ -120,39 +141,21 @@ int main(int argc, char* argv[]) {
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    glUseProgram(shaderProgram);
-    glUniform1i(glGetUniformLocation(shaderProgram, "objectTexture"), 0);
-    glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, &(vec3s){1, 1, 1});
-    glUniform3fv(glGetUniformLocation(shaderProgram, "lightColor"), 1, &(vec3s){1, 1, 1});
-    glUniform3fv(glGetUniformLocation(shaderProgram, "lightDirection"), 1, &(vec3s){0.2f, 1.0f, 0.3f});
-
-    vec3s cameraPos = {0, 0, 3};
-    vec3s cameraTarget = {0.0f, 0.0f, 0.0f};
-    vec3s cameraForward = glms_vec3_normalize(glms_vec3_sub(cameraTarget, cameraPos));
-    vec3s cameraRight = glms_vec3_normalize(glms_vec3_cross(cameraForward, WORLD_UP));
-    vec3s cameraUp = glms_vec3_normalize(glms_vec3_cross(cameraRight, cameraForward));
-
-    float cameraYaw = -90;
-    float cameraPitch = 0;
-
-    mat4s view;
-    mat4s projection;
-
-
-    unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
-    unsigned int modelInvLoc = glGetUniformLocation(shaderProgram, "modelInv");
-    unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-    unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+    UpdateShader(shader.id);
+    glUseProgram(shader.id);
+    unsigned int modelLoc = glGetUniformLocation(shader.id, "model");
+    unsigned int modelInvLoc = glGetUniformLocation(shader.id, "modelInv");
+    unsigned int viewLoc = glGetUniformLocation(shader.id, "view");
+    unsigned int projectionLoc = glGetUniformLocation(shader.id, "projection");
 
 
     vec3s cubePositions[] = {
@@ -166,11 +169,8 @@ int main(int argc, char* argv[]) {
         (vec3s){1.5f,  0.2f, -1.5f}, 
         (vec3s){-1.3f,  1.0f, -1.5f}
     };
-    
-    double deltaTime = 0;
-    double lastFrame = 0;
 
-    float moveSpeed;
+
     double timer = 0;
     while (!glfwWindowShouldClose(window))
     {
@@ -195,57 +195,37 @@ int main(int argc, char* argv[]) {
         
         vec3s moveDir = GLMS_VEC3_ZERO;
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            moveDir = glms_vec3_add(moveDir, glms_vec3_scale(cameraRight, 1));
+            moveDir = glms_vec3_add(moveDir, glms_vec3_scale(camera.right, 1));
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            moveDir = glms_vec3_add(moveDir, glms_vec3_scale(cameraRight, -1));
+            moveDir = glms_vec3_add(moveDir, glms_vec3_scale(camera.right, -1));
         }
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            moveDir = glms_vec3_add(moveDir, glms_vec3_scale(cameraForward, 1));
+            moveDir = glms_vec3_add(moveDir, glms_vec3_scale(camera.forward, 1));
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            moveDir = glms_vec3_add(moveDir, glms_vec3_scale(cameraForward, -1));
+            moveDir = glms_vec3_add(moveDir, glms_vec3_scale(camera.forward, -1));
         }
-        cameraPos = glms_vec3_add(cameraPos, glms_vec3_scale(glms_vec3_normalize(moveDir), MOVE_SPEED * deltaTime));
 
-        cameraYaw += mouseDeltaX * LOOK_SENSITIVITY;
-        cameraPitch += -mouseDeltaY * LOOK_SENSITIVITY;
+        moveDir = glms_vec3_scale(glms_vec3_normalize(moveDir), MOVE_SPEED * deltaTime);
+        camera = camera_update(camera, moveDir, mouseDeltaX * LOOK_SENSITIVITY, -mouseDeltaY * LOOK_SENSITIVITY);
 
-        if(cameraPitch > 89.0f)
-            cameraPitch = 89.0f;
-        if(cameraPitch < -89.0f)
-            cameraPitch = -89.0f;
-
-        vec3s direction;
-        direction.x = cos(glm_rad(cameraYaw)) * cos(glm_rad(cameraPitch));
-        direction.y = sin(glm_rad(cameraPitch));
-        direction.z = sin(glm_rad(cameraYaw)) * cos(glm_rad(cameraPitch));
-        cameraForward = glms_vec3_normalize(direction);
-        cameraRight = glms_vec3_normalize(glms_vec3_cross(cameraForward, WORLD_UP));
-        cameraUp = glms_vec3_normalize(glms_vec3_cross(cameraRight, cameraForward));
-
-        // versors pitch = glms_quat_normalize(glms_quatv(-mouseDeltaY * LOOK_SENSITIVITY, quaternion_right(cameraTrans.rotation)));
-        // versors yaw = glms_quat_normalize(glms_quat(mouseDeltaX * LOOK_SENSITIVITY, 0, -1, 0));
-        // cameraTrans.rotation = glms_quat_normalize(glms_quat_mul(pitch, glms_quat_normalize(glms_quat_mul(cameraTrans.rotation, yaw))));
-
-        view = glms_look(cameraPos, cameraForward, cameraUp);
+        view = glms_look(camera.position, camera.forward, camera.up);
 
         glClearColor(0.05f, 0.08f, 0.12f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUseProgram(shaderProgram);
+        glUseProgram(shader.id);
 
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view);
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection);
         
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glBindTexture(GL_TEXTURE_2D, texture.id);
 
         glBindVertexArray(VAO);
-        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        //glDrawArrays( GL_TRIANGLES, 0, 36);
 
-        for(int i = 0; i < 10; i++)
+        for(int i = 0; i < 9; i++)
         {
             mat4s model = GLMS_MAT4_IDENTITY;
             model = glms_translate(model, cubePositions[i]);
