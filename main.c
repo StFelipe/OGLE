@@ -55,6 +55,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
         UpdateShader(shader.id);
     }
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        int mode = glfwGetInputMode(window, GLFW_CURSOR);
+        if (mode == GLFW_CURSOR_DISABLED)
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        else
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -68,7 +75,7 @@ int main(int argc, char* argv[]) {
     double deltaTime = 0;
     double lastFrame = 0;
 
-    Camera camera = camera_create((vec3s){ 0, 1, 0 }, (vec3s){ 0.0f, 0.0f, 0.0f });
+    Camera camera = camera_create((vec3s){ 0, 0, 5 }, (vec3s){ 0.0f, 0.0f, 0.0f });
 
     GLFWwindow* window = engine_init(windowWidth, windowHeight);
     if (window == NULL)
@@ -157,8 +164,13 @@ int main(int argc, char* argv[]) {
         // glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view);
         glUniform2fv(glGetUniformLocation(shader.id, "u_resolution"), 1, &(vec2s){windowWidth, windowHeight});
         glUniform1f(glGetUniformLocation(shader.id, "u_time"), currentFrame);
+        glUniform3fv(glGetUniformLocation(shader.id, "cameraPos"), 1, &camera.position);
         glUniformMatrix4fv(glGetUniformLocation(shader.id, "view"), 1, GL_FALSE, &view);
         glUniformMatrix4fv(glGetUniformLocation(shader.id, "projection"), 1, GL_FALSE, &projection);
+
+        mat4s model = GLMS_MAT4_IDENTITY;
+        model = glms_translate(model, (vec3s){0, 0, 0});
+        glUniformMatrix4fv(glGetUniformLocation(shader.id, "model"), 1, GL_FALSE, &model);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture.id);
