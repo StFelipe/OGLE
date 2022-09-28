@@ -23,7 +23,7 @@ double mouseX = 0;
 double mouseY = 0;
 double mouseDeltaX = 0;
 double mouseDeltaY = 0;
-bool firstMouse = true;
+bool ignoreMouseChange = true;
 
 void UpdateShader(unsigned int shaderId) {
     glUseProgram(shaderId);
@@ -36,10 +36,10 @@ mat4s projection_create(mat4s projection, int width, int height) {
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-    if (firstMouse) {
+    if (ignoreMouseChange || glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
         mouseX = xpos;
         mouseY = ypos;
-        firstMouse = false;
+        ignoreMouseChange = false;
     }
 
     mouseDeltaX = xpos - mouseX;
@@ -57,6 +57,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
         int mode = glfwGetInputMode(window, GLFW_CURSOR);
+        ignoreMouseChange = true;
         if (mode == GLFW_CURSOR_DISABLED)
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         else
@@ -164,7 +165,12 @@ int main(int argc, char* argv[]) {
         // glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view);
         glUniform2fv(glGetUniformLocation(shader.id, "u_resolution"), 1, &(vec2s){windowWidth, windowHeight});
         glUniform1f(glGetUniformLocation(shader.id, "u_time"), currentFrame);
+
         glUniform3fv(glGetUniformLocation(shader.id, "cameraPos"), 1, &camera.position);
+        glUniform3fv(glGetUniformLocation(shader.id, "cameraDir"), 1, &camera.forward);
+        glUniform3fv(glGetUniformLocation(shader.id, "cameraRight"), 1, &camera.right);
+        glUniform3fv(glGetUniformLocation(shader.id, "cameraUp"), 1, &camera.up);
+
         glUniformMatrix4fv(glGetUniformLocation(shader.id, "view"), 1, GL_FALSE, &view);
         glUniformMatrix4fv(glGetUniformLocation(shader.id, "projection"), 1, GL_FALSE, &projection);
 
