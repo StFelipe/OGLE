@@ -7,8 +7,8 @@
 #include "engine.h"
 #include "cglm/struct.h"
 
-#define WINDOW_START_WIDTH 800
-#define WINDOW_START_HEIGHT 600
+#define WINDOW_START_WIDTH 1920
+#define WINDOW_START_HEIGHT 1080
 
 #define LOOK_SENSITIVITY 0.025
 #define MOVE_SPEED_CHANGE 1
@@ -43,8 +43,8 @@ unsigned int cameraUpLoc;
 
 double bailout = 5;
 double power = 8;
-double iterations = 16;
-double numberOfSteps = 150;
+double iterations = 20;
+double numberOfSteps = 500;
 
 void UpdateShader(unsigned int shaderId) {
     glUseProgram(shaderId);
@@ -105,8 +105,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 int main(int argc, char* argv[]) {
-    int windowWidth = 800;
-    int windowHeight = 600;
+    int windowWidth = WINDOW_START_WIDTH;
+    int windowHeight = WINDOW_START_HEIGHT;
     int viewportDimensions[4];
 
     mat4s view;
