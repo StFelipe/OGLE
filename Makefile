@@ -1,3 +1,4 @@
+# BUILD NECE RADIT BEZ libwinpthread-1.dll
 name=main.exe
 
 CC=gcc
