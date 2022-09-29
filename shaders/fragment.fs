@@ -1,8 +1,7 @@
 #version 330 core
 
 precision highp float; 
-uniform vec2 u_resolution;  // Width and height of the shader
-uniform float u_time;  // Time elapsed
+uniform vec2 resolution;  // Width and height of the shader
 
 uniform vec3 cameraPos;
 uniform vec3 cameraDir;
@@ -10,14 +9,20 @@ uniform vec3 cameraRight;
 uniform vec3 cameraUp;
 uniform float moveSpeed;
 
+uniform int numberOfSteps;
+
+uniform float bailout;
+uniform float power;
+uniform int iterations;
+
 // Constants
-#define NUMBER_OF_STEPS 250
+//#define NUMBER_OF_STEPS 250
 //#define MINIMUM_HIT_DISTANCE 0.000000005
 #define MAXIMUM_TRACE_DISTANCE 1000.0
 
-#define BAILOUT 5
-#define POWER 8
-#define ITERATIONS 16
+// #define BAILOUT 5
+// #define POWER 8
+// #define ITERATIONS 16
 
 #define MOVE_SPEED_HIT_DISTANCE_MUL 0.001
 float minHitDistance;
@@ -27,20 +32,20 @@ float minHitDistance;
 	vec3 z = pos;
 	float dr = 1.0;
 	float r = 0.0;
-	for (int i = 0; i < ITERATIONS ; i++) {
+	for (int i = 0; i < iterations ; i++) {
 		r = length(z);
-		if (r>BAILOUT)
+		if (r>bailout)
             break;
 		
 		// convert to polar coordinates
 		float theta = acos(z.z/r);
 		float phi = atan(z.y,z.x);
-		dr =  pow( r, POWER-1.0)*POWER*dr + 1.0;
+		dr =  pow( r, power-1.0)*power*dr + 1.0;
 		
 		// scale and rotate the point
-		float zr = pow( r,POWER);
-		theta = theta*POWER;
-		phi = phi*POWER;
+		float zr = pow( r,power);
+		theta = theta*power;
+		phi = phi*power;
 		
 		// convert back to cartesian coordinates
 		z = zr*vec3(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
@@ -66,7 +71,7 @@ vec3 ray_march(in vec3 ro, in vec3 rd)
 {
     float total_distance_traveled = 0.0;
 
-    for (int i = 0; i < NUMBER_OF_STEPS; ++i)
+    for (int i = 0; i < numberOfSteps; ++i)
     {
         // Calculate our current position along the ray
         vec3 current_position = ro + total_distance_traveled * rd;
@@ -85,7 +90,7 @@ vec3 ray_march(in vec3 ro, in vec3 rd)
             //vec3 normal = calculate_normal(current_position);
             //return normal * 0.5 + 0.5;
 
-            float c = (float(i) / NUMBER_OF_STEPS);
+            float c = (float(i) / numberOfSteps);
             return vec3(1 - c, abs(c - 0.5) * 2, 1 - (abs(c - 0.5) * 2));
         }
 
@@ -108,7 +113,7 @@ void main()
 {
     minHitDistance = moveSpeed * MOVE_SPEED_HIT_DISTANCE_MUL;
 
-    vec2 uv = (gl_FragCoord.xy - (0.5 * u_resolution.xy)) / u_resolution.x;
+    vec2 uv = (gl_FragCoord.xy - (0.5 * resolution.xy)) / resolution.x;
 
     vec3 ro = cameraPos;
     vec3 rd = cameraDir;

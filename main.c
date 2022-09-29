@@ -13,6 +13,9 @@
 #define LOOK_SENSITIVITY 0.025
 #define MOVE_SPEED_CHANGE 1
 
+#define FRACTAL_VALS_CHANGE_SPEED 1
+#define NUM_STEPS_CHANGE_SPEED 20
+
 #define FOV 45
 
 
@@ -26,10 +29,36 @@ double mouseDeltaX = 0;
 double mouseDeltaY = 0;
 bool ignoreMouseChange = true;
 
+unsigned int resolutionLoc;
+unsigned int moveSpeedLoc;
+unsigned int bailoutLoc;
+unsigned int powerLoc;
+unsigned int iterationsLoc;
+unsigned int numberOfStepsLoc;
+
+unsigned int cameraPosLoc;
+unsigned int cameraDirLoc;
+unsigned int cameraRightLoc;
+unsigned int cameraUpLoc;
+
+double bailout = 5;
+double power = 8;
+double iterations = 16;
+double numberOfSteps = 150;
+
 void UpdateShader(unsigned int shaderId) {
     glUseProgram(shaderId);
-    // glUniform1i(glGetUniformLocation(shaderId, "objectTexture"), 0);
-    // glUniform3fv(glGetUniformLocation(shaderId, "objectColor"), 1, &(vec3s){1, 1, 1});
+    resolutionLoc = glGetUniformLocation(shader.id, "resolution");
+    moveSpeedLoc = glGetUniformLocation(shader.id, "moveSpeed");
+    bailoutLoc = glGetUniformLocation(shader.id, "bailout");
+    powerLoc = glGetUniformLocation(shader.id, "power");
+    iterationsLoc = glGetUniformLocation(shader.id, "iterations");
+    numberOfStepsLoc = glGetUniformLocation(shader.id, "numberOfSteps");
+
+    cameraPosLoc = glGetUniformLocation(shader.id, "cameraPos");
+    cameraDirLoc = glGetUniformLocation(shader.id, "cameraDir");
+    cameraRightLoc = glGetUniformLocation(shader.id, "cameraRight");
+    cameraUpLoc = glGetUniformLocation(shader.id, "cameraUp");
 }
 
 mat4s projection_create(mat4s projection, int width, int height) {
@@ -52,9 +81,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     if (yoffset > 0)
-        moveSpeed *= 2;
+        moveSpeed *= 1.2;
     else
-        moveSpeed /= 2;
+        moveSpeed /= 1.2;
 }
 
 
@@ -101,10 +130,6 @@ int main(int argc, char* argv[]) {
     if (!shader_compileFromFiles(&shader, infoLog))
         return -1;
 
-    Texture texture;
-    if (!texture_loadAndGen("wall.jpg", &texture, GL_RGB))
-        return -1;
-
     float vertices[] = {
         -1, 1, 0,  1, 1, 0,  1, -1, 0,
         1, -1, 0,  -1, -1, 0,  -1, 1, 0
@@ -124,8 +149,6 @@ int main(int argc, char* argv[]) {
     glBindVertexArray(0);
 
     UpdateShader(shader.id);
-    glUseProgram(shader.id);
-    //unsigned int modelLoc = glGetUniformLocation(shader.id, "model");
 
     double timer = 0;
     while (!glfwWindowShouldClose(window))
@@ -163,10 +186,38 @@ int main(int argc, char* argv[]) {
             moveDir = glms_vec3_add(moveDir, glms_vec3_scale(camera.forward, -1));
         }
 
+        if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) {
+            bailout -= FRACTAL_VALS_CHANGE_SPEED * deltaTime;
+        }
+        if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) {
+            bailout += FRACTAL_VALS_CHANGE_SPEED * deltaTime;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+            power -= FRACTAL_VALS_CHANGE_SPEED * deltaTime;
+        }
+        if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
+            power += FRACTAL_VALS_CHANGE_SPEED * deltaTime;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
+            iterations -= FRACTAL_VALS_CHANGE_SPEED * deltaTime;
+        }
+        if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
+            iterations += FRACTAL_VALS_CHANGE_SPEED * deltaTime;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) {
+            numberOfSteps -= NUM_STEPS_CHANGE_SPEED * deltaTime;
+        }
+        if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) {
+            numberOfSteps += NUM_STEPS_CHANGE_SPEED * deltaTime;
+        }
+
         moveDir = glms_vec3_scale(glms_vec3_normalize(moveDir), moveSpeed * deltaTime);
         camera = camera_update(camera, moveDir, mouseDeltaX * LOOK_SENSITIVITY, -mouseDeltaY * LOOK_SENSITIVITY);
 
-        view = glms_look(camera.position, camera.forward, camera.up);
+        //view = glms_look(camera.position, camera.forward, camera.up);
 
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -174,17 +225,18 @@ int main(int argc, char* argv[]) {
         glUseProgram(shader.id);
 
         // glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view);
-        glUniform2fv(glGetUniformLocation(shader.id, "u_resolution"), 1, &(vec2s){windowWidth, windowHeight});
-        glUniform1f(glGetUniformLocation(shader.id, "u_time"), currentFrame);
-        glUniform1f(glGetUniformLocation(shader.id, "moveSpeed"), moveSpeed);
+        glUniform2fv(resolutionLoc, 1, &(vec2s){windowWidth, windowHeight});
+        glUniform1f(moveSpeedLoc, moveSpeed);
 
-        glUniform3fv(glGetUniformLocation(shader.id, "cameraPos"), 1, &camera.position);
-        glUniform3fv(glGetUniformLocation(shader.id, "cameraDir"), 1, &camera.forward);
-        glUniform3fv(glGetUniformLocation(shader.id, "cameraRight"), 1, &camera.right);
-        glUniform3fv(glGetUniformLocation(shader.id, "cameraUp"), 1, &camera.up);
+        glUniform1i(numberOfStepsLoc, (int)numberOfSteps);
+        glUniform1i(iterationsLoc, (int)iterations);
+        glUniform1f(powerLoc, power);
+        glUniform1f(bailoutLoc, bailout);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture.id);
+        glUniform3fv(cameraPosLoc, 1, &camera.position);
+        glUniform3fv(cameraDirLoc, 1, &camera.forward);
+        glUniform3fv(cameraRightLoc, 1, &camera.right);
+        glUniform3fv(cameraUpLoc, 1, &camera.up);
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
